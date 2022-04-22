@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { getModelData } from "../../services";
 import Car from "../car";
+import Climate from "../climate";
 import Counter from "../counter";
 import Notice from "../notice";
 import Stats from "../stats";
+import Wheels from "../wheels";
 import "./index.css";
 export class Battery extends Component {
   constructor(props) {
@@ -13,6 +15,8 @@ export class Battery extends Component {
     this.increment = this.increment.bind(this);
     this.decrement = this.decrement.bind(this);
     this.updateCounterState = this.updateCounterState.bind(this);
+    this.handleChangeClimate = this.handleChangeClimate.bind(this);
+    this.handleChangeWheels = this.handleChangeWheels.bind(this);
     this.state = {
       carstats: [],
       config: {
@@ -41,11 +45,11 @@ export class Battery extends Component {
   };
 
   statsUpdate() {
-    const carModels = ["60", "60D", "75", "75D", "90D", "P100D"];
+    const carModels = ['60', '60D', '75', '75D', '90D', 'P100D'];
     // Fetch model info from BatteryService and calculate then update state
     this.setState({
-      carstats: this.calculateStats(carModels, this.state.config),
-    });
+      carstats: this.calculateStats(carModels, this.state.config)
+    })
   }
 
   componentDidMount() {
@@ -59,7 +63,7 @@ export class Battery extends Component {
       ? (config["speed"] = newValue)
       : (config["temperature"] = newValue);
     // update our state
-    this.setState({ config });
+    this.setState({ config }, () => {this.statsUpdate()});
   }
   increment(e, title) {
     e.preventDefault();
@@ -97,12 +101,21 @@ export class Battery extends Component {
       this.updateCounterState(title, newValue);
     }
   }
+  handleChangeClimate() {
+    const config = { ...this.state.config };
+    config["climate"] = !this.state.config.climate;
+    this.setState({ config });
+  }
+  handleChangeWheels(size) {
+    const config = { ...this.state.config };
+    config["wheels"] = size;
+    this.setState({ config });
+  }
   render() {
     //console.log('abc=',this.state.config.wheels);
-    console.log('abc=',this.props);
+    console.log("abc=", this.props);
     return (
       <form className="tesla-battery">
-        
         <h1>Range=</h1>
         <Car wheelsize={this.state.config.wheels} />
         <Stats carstats={this.state.carstats} />
@@ -119,6 +132,15 @@ export class Battery extends Component {
               initValues={this.props.counterDefaultVal.temperature}
               increment={this.increment}
               decrement={this.decrement}
+            />
+            <Climate
+              value={this.state.config.climate}
+              limit={this.state.config.temperature > 10}
+              handleChangeClimate={this.handleChangeClimate}
+            />
+            <Wheels
+              value={this.state.config.wheels}
+              handleChangeWheels={this.handleChangeWheels}
             />
           </div>
         </div>
